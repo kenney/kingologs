@@ -1,0 +1,28 @@
+###
+# Main server configuration
+###
+service:
+    name: "kingologs"
+    hostname: ""            # Leave hostname empty to use the current hostname.
+
+###
+# Socket connections
+###
+connection:
+    tcp:
+        enabled: true
+        host: 127.0.0.1
+        port: 65140
+
+###
+# Kinesis relay settings
+##
+kinesis:
+  streamName: "kingologs-test"
+  region: "us-east-1"
+
+###
+# Debug options
+###
+debug:
+    verbose: true # Increases the logging output.
