@@ -76,7 +76,7 @@ Work not yet done
 By default the system should utilize batch PUT mode to reduce the total number of Kinesis API calls.
 
 Planned options for flushing to Kinesis
-* batchPutIdealQuantity:  how many records to queue before performing a batch PUT
+* batchPutLimit:  how many records to queue before performing a batch PUT
 * batchPutIdealSize:  ideal packet size
-* flushIntervalTime:  time between flushes in the event the ideal
+* flushInterval:  time between flushes in the event the ideal
 * recordDelimiter: what character(s) by which to separate each syslog record

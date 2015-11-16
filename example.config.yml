@@ -6,7 +6,7 @@ service:
     hostname: ""            # Leave hostname empty to use the current hostname.
 
 ###
-# Socket connections
+# TCP connections
 ###
 connection:
     tcp:

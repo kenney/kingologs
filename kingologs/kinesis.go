@@ -156,3 +156,37 @@ func (kr KinesisRelay) putRecord(msg string) {
 
 	kr.logger.Info.Println("Done putting record!")
 }
+
+// Put multiple records.
+func (kr KinesisRelay) putRecords(messages []string, num int) {
+	kr.logger.Info.Println("Attempting to put records into stream")
+
+	svc := kinesis.New(&kr.awsConfig)
+
+	records := make([]*kinesis.PutRecordsRequestEntry, num)
+	for _, msg := range messages {
+		records.Append(records, &kinesis.PutRecordsRequestEntry{
+			Data:         []byte(msg),
+			PartitionKey: aws.String("1"),
+		})
+	}
+
+	// TODO real partition key.
+	params := &kinesis.PutRecordsInput{
+		StreamName: aws.String(kr.config.Kinesis.StreamName),
+		Records:    records,
+	}
+
+	resp, err := svc.PutRecords(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		kr.logger.Error.Printf("Error w/ PutRecord: %#v", err.Error())
+		return
+	}
+
+	kr.logger.Trace.Printf("PutRecord response:  %#v", resp)
+
+	kr.logger.Info.Println("Done putting record!")
+}

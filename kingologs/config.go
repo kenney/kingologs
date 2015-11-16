@@ -51,8 +51,10 @@ type ConfigValues struct {
 		}
 	}
 	Kinesis struct {
-		StreamName string
-		Region     string
+		StreamName    string
+		Region        string
+		BatchPutLimit int
+		FlushInterval int
 	}
 	Debug struct {
 		Verbose bool
@@ -84,6 +86,8 @@ func (config *ConfigValues) LoadFile(filePath string) error {
 	// Kinesis relay.
 	config.Kinesis.StreamName = "kingologs-test"
 	config.Kinesis.Region = "us-east-1"
+	config.Kinesis.BatchPutLimit = 10
+	config.Kinesis.FlushInterval = 5
 
 	// Debug
 	config.Debug.Verbose = false
