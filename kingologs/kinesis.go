@@ -60,7 +60,11 @@ func (kr KinesisRelay) StartRelay() {
 		select {
 		case msg := <-kr.Pipe:
 			kr.logger.Trace.Printf("Value in channel: %s", msg)
-			kr.putRecord(msg)
+			messages := make([]string, 2)
+			messages = append(messages, "Testing PutRecords")
+			messages = append(messages, msg)
+			kr.putRecords(messages, 2)
+			//kr.putRecord(msg)
 		}
 	}
 }
@@ -165,7 +169,7 @@ func (kr KinesisRelay) putRecords(messages []string, num int) {
 
 	records := make([]*kinesis.PutRecordsRequestEntry, num)
 	for _, msg := range messages {
-		records.Append(records, &kinesis.PutRecordsRequestEntry{
+		records = append(records, &kinesis.PutRecordsRequestEntry{
 			Data:         []byte(msg),
 			PartitionKey: aws.String("1"),
 		})
