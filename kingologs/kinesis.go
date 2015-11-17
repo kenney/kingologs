@@ -34,6 +34,10 @@ func NewKinesisRelay(l Logger, c ConfigValues) *KinesisRelay {
 	// TODO - handle this via ENV variables as well.
 	kr.awsConfig.Region = aws.String(kr.config.Kinesis.Region)
 
+	if kr.config.Debug.LogAWSHTTPCalls {
+		kr.awsConfig.WithLogLevel(aws.LogDebugWithHTTPBody)
+	}
+
 	// TODO configure the channel better in the future.
 	kr.Pipe = make(chan string, 100)
 
@@ -55,16 +59,26 @@ func (kr KinesisRelay) NewMessage(s string) {
 func (kr KinesisRelay) StartRelay() {
 	kr.logger.Info.Println("Starting to watch channel")
 
+	// Our message buffer.
+	var messages []string
+
 	// Wait for new messages in channel.
 	for true {
 		select {
 		case msg := <-kr.Pipe:
 			kr.logger.Trace.Printf("Value in channel: %s", msg)
-			messages := make([]string, 2)
-			messages = append(messages, "Testing PutRecords")
+
+			//messages = append(messages, "Testing PutRecords")
 			messages = append(messages, msg)
-			kr.putRecords(messages, 2)
-			//kr.putRecord(msg)
+			//kr.logger.Trace.Printf("Debug message: %#v", messages)
+
+			if len(messages) >= kr.config.Kinesis.BatchPutLimit {
+				kr.logger.Trace.Println("Flushing as we've hit our ideal batch size")
+				kr.putRecords(messages, len(messages))
+				messages = nil
+			} else {
+				kr.logger.Trace.Println("No flush yet")
+			}
 		}
 	}
 }
@@ -167,13 +181,15 @@ func (kr KinesisRelay) putRecords(messages []string, num int) {
 
 	svc := kinesis.New(&kr.awsConfig)
 
-	records := make([]*kinesis.PutRecordsRequestEntry, num)
+	records := make([]*kinesis.PutRecordsRequestEntry, 0, num)
 	for _, msg := range messages {
 		records = append(records, &kinesis.PutRecordsRequestEntry{
 			Data:         []byte(msg),
 			PartitionKey: aws.String("1"),
 		})
 	}
+
+	//kr.logger.Trace.Printf("PRRE Debug:  %#v", records)
 
 	// TODO real partition key.
 	params := &kinesis.PutRecordsInput{
@@ -186,11 +202,11 @@ func (kr KinesisRelay) putRecords(messages []string, num int) {
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
 		// Message from an error.
-		kr.logger.Error.Printf("Error w/ PutRecord: %#v", err.Error())
+		kr.logger.Error.Printf("Error w/ PutRecords: %#v", err.Error())
 		return
 	}
 
-	kr.logger.Trace.Printf("PutRecord response:  %#v", resp)
+	kr.logger.Trace.Printf("PutRecords response:  %#v", resp)
 
-	kr.logger.Info.Println("Done putting record!")
+	kr.logger.Info.Println("Done putting records!")
 }

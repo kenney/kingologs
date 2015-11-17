@@ -57,7 +57,8 @@ type ConfigValues struct {
 		FlushInterval int
 	}
 	Debug struct {
-		Verbose bool
+		Verbose         bool
+		LogAWSHTTPCalls bool
 	}
 }
 
@@ -91,6 +92,7 @@ func (config *ConfigValues) LoadFile(filePath string) error {
 
 	// Debug
 	config.Debug.Verbose = false
+	config.Debug.LogAWSHTTPCalls = false
 
 	// Attempt to read in the file.
 	if filePath != "" {

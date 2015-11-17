@@ -20,9 +20,12 @@ connection:
 kinesis:
   streamName: "kingologs-test"
   region: "us-east-1"
+  batchPutLimit: 2
+  flushInterval: 5
 
 ###
 # Debug options
 ###
 debug:
     verbose: true # Increases the logging output.
+    logAWSHTTPCalls: false # Verbose AWS HTTP calls.
